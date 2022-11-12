@@ -1,7 +1,5 @@
 package com.task.api.taskapi.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -20,9 +18,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import springfox.documentation.spring.web.json.Json;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
 import java.security.GeneralSecurityException;
@@ -53,7 +49,7 @@ public class TasksController {
      * @return An authorized Credential object.
      * @throws IOException If the credentials.json file cannot be found.
      */
-    private Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT)
+    private Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT, String userCode)
             throws IOException {
         // Load client secrets.
         InputStream in = TasksController.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
@@ -63,20 +59,24 @@ public class TasksController {
         GoogleClientSecrets clientSecrets =
                 GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
-        // Build flow and trigger user authorization request.
+        // Build flow
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
                 .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
                 .setAccessType("offline")
                 .build();
+
+        // And trigger user authorization request.
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+
+        // Response user auth object
+        return new AuthorizationCodeInstalledApp(flow, receiver).authorize(userCode);
     }
 
-    private Tasks getTasksService() throws GeneralSecurityException, IOException {
+    private Tasks getTasksService(String userCode) throws GeneralSecurityException, IOException {
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        Tasks service = new Tasks.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+        Tasks service = new Tasks.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT, userCode))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
 
@@ -84,10 +84,9 @@ public class TasksController {
     }
 
     @ApiOperation(value = "Test")
-    @GetMapping("/get")
-    public ResponseEntity test() throws IOException, GeneralSecurityException {
-
-        Tasks service = getTasksService();
+    @GetMapping(value = "/get/{userCode:\\d+}")
+    public ResponseEntity test(@PathVariable String userCode) throws IOException, GeneralSecurityException {
+        Tasks service = getTasksService(userCode);
 
         // Print the first 10 task lists.
         TaskLists result = service.tasklists().list()
