@@ -6,6 +6,7 @@ import com.task.api.taskapi.repository.IAccountRepository;
 import com.task.api.taskapi.service.IAccountsManagerService;
 import io.swagger.annotations.ApiOperation;
 import lombok.var;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 
@@ -27,7 +27,7 @@ public class AuthorizationController {
     private IAccountRepository accountRepository;
 
     @PostMapping()
-    public ResponseEntity<String> addAccount(@RequestBody AccountEntity account) throws IOException {
+    public ResponseEntity<String> addAccount(@RequestBody @NotNull AccountEntity account) throws IOException {
         String link = accountsManagerService.getAuthLink(account.getName());
         /*
         Tasks service = new Tasks.Builder(HTTP_TRANSPORT, JSON_FACTORY, )
@@ -48,7 +48,7 @@ public class AuthorizationController {
 
     @ApiOperation(value = "Callback for auth")
     @GetMapping(path = "/callback/{userIdURL}/", params = {"code", "scope"})
-    ResponseEntity firstCallbackAuth(@RequestParam String code, @PathVariable String userIdURL) throws IOException {
+    ResponseEntity callbackAuth(@RequestParam String code, @PathVariable String userIdURL) throws IOException {
         String userId = URLDecoder.decode(userIdURL, String.valueOf(StandardCharsets.UTF_8));
         GoogleTokenResponse token = accountsManagerService.getTokenResponse(code, userId);
 

@@ -1,9 +1,6 @@
 package com.task.api.taskapi.service.impl;
 
-import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.auth.oauth2.TokenResponse;
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
@@ -17,7 +14,6 @@ import com.task.api.taskapi.controller.TasksController;
 import com.task.api.taskapi.repository.IAccountRepository;
 import com.task.api.taskapi.service.IAccountsManagerService;
 import lombok.Getter;
-import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,14 +28,14 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
-public class AccountManagerService implements IAccountsManagerService {
+public class AccountsManagerService implements IAccountsManagerService {
     @Getter
     private final GoogleAuthorizationCodeFlow flow;
 
     @Autowired
     private IAccountRepository accountRepository;
 
-    public AccountManagerService() throws GeneralSecurityException, IOException {
+    public AccountsManagerService() throws GeneralSecurityException, IOException {
         // Load client secrets.
         String CREDENTIALS_FILE_PATH = "/credentials.json";
         InputStream in = TasksController.class.getResourceAsStream(CREDENTIALS_FILE_PATH);

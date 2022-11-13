@@ -5,8 +5,8 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.tasks.Tasks;
+import com.google.api.services.tasks.model.Task;
 import com.google.api.services.tasks.model.TaskList;
-import com.google.api.services.tasks.model.TaskLists;
 import com.task.api.taskapi.TaskApiApplication;
 import com.task.api.taskapi.service.IAccountsManagerService;
 import io.swagger.annotations.ApiOperation;
@@ -52,6 +52,11 @@ public class TasksController {
         return service;
     }
 
+    private void initTestListToAccount(String userCode) throws GeneralSecurityException, IOException {
+        Tasks service = getTasksService(userCode);
+
+    }
+
     @ApiOperation(value = "Test")
     @GetMapping(value = "/get", params = {"userCode"})
     public ResponseEntity test(@RequestParam String userCode) throws IOException, GeneralSecurityException {
@@ -63,15 +68,14 @@ public class TasksController {
         Tasks service = getTasksService(userCode);
 
         // Print the first 10 task lists.
-        TaskLists result = service.tasklists().list()
-                .setMaxResults(10)
-                .execute();
+        TaskList result = service.tasklists().get("").execute();
 
-        List<TaskList> taskLists = result.getItems();
-        if (taskLists == null || taskLists.isEmpty()) {
+        List<Task> taskList = service.tasks().list("Арены").execute().getItems();
+
+        if (taskList == null || taskList.isEmpty()) {
             return new ResponseEntity("No task lists found.", HttpStatus.ACCEPTED);
         } else {
-            return new ResponseEntity(taskLists, HttpStatus.ACCEPTED);
+            return new ResponseEntity(taskList, HttpStatus.ACCEPTED);
         }
 
     }
