@@ -1,14 +1,16 @@
 package com.task.api.taskapi.entity;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+@RequiredArgsConstructor
 @Document(collection = "Accounts")
+@ToString
 public class AccountEntity {
-    public AccountEntity(String name) {
-        this.name = name;
-    }
-
     @Id
-    private String id;
-    public String name;
+    private final String id;
+    @Getter
+    private final String name;
 }
