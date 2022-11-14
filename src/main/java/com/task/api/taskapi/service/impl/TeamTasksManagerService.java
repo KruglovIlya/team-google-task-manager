@@ -6,7 +6,11 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 
 import com.google.api.services.tasks.Tasks;
+import com.google.api.services.tasks.model.Task;
+import com.google.api.services.tasks.model.TaskList;
 import com.task.api.taskapi.TaskApiApplication;
+import com.task.api.taskapi.entity.TaskEntity;
+import com.task.api.taskapi.entity.TaskToAddEntity;
 import com.task.api.taskapi.service.IAccountsManagerService;
 import com.task.api.taskapi.service.ITeamTaskManagerService;
 import lombok.var;
@@ -17,7 +21,9 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 @Service
-public class TeamTaskManagerService implements ITeamTaskManagerService {
+public class TeamTasksManagerService implements ITeamTaskManagerService {
+    private final String TEAM_TASK_LIST = "Team task list";
+
     @Autowired
     private IAccountsManagerService accountsManagerService;
 
@@ -31,5 +37,29 @@ public class TeamTaskManagerService implements ITeamTaskManagerService {
         return new Tasks.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
                 .setApplicationName(TaskApiApplication.getAPPLICATION_NAME())
                 .build();
+    }
+
+    @Override
+    public TaskList initTeamTasksListOfAccount(String userCode) throws GeneralSecurityException, IOException {
+        Tasks service = getTasksService(userCode);
+
+        TaskList teamList = new TaskList().setTitle(TEAM_TASK_LIST);
+
+        var taskListResult = service.tasklists().insert(teamList).execute();
+
+        return taskListResult;
+    }
+
+    @Override
+    public boolean addTaskToUserAccount(TaskToAddEntity task) throws IOException, GeneralSecurityException {
+        if (!accountsManagerService.checkAccountExist(task.targetUser))
+            return false;
+
+        Tasks service = getTasksService(task.targetUser);
+        String taskListId = accountsManagerService.getTeamTaskListFromAccount(task.targetUser);
+
+        service.tasks().insert(taskListId, new Task().setTitle(task.taskName)).execute();
+
+        return true;
     }
 }

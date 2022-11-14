@@ -1,23 +1,17 @@
 package com.task.api.taskapi.controller;
 
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.tasks.Tasks;
 import com.google.api.services.tasks.model.Task;
 import com.google.api.services.tasks.model.TaskList;
-import com.task.api.taskapi.TaskApiApplication;
+import com.task.api.taskapi.entity.TaskToAddEntity;
 import com.task.api.taskapi.service.IAccountsManagerService;
+import com.task.api.taskapi.service.ITeamTaskManagerService;
 import io.swagger.annotations.ApiOperation;
-import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -27,34 +21,22 @@ import java.util.List;
 @Controller
 @RequestMapping("api/google-tasks")
 public class TasksController {
-    private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     @Autowired
     private IAccountsManagerService accountsManagerService;
 
+    @Autowired
+    private ITeamTaskManagerService teamTaskManagerService;
+
     TasksController() {
     }
-    /**
-     * Creates an authorized Credential object.
-     *
-     * @return An authorized Credential object.
-     * @throws IOException If the credentials.json file cannot be found.
-     */
 
-    private Tasks getTasksService(String userCode) throws GeneralSecurityException, IOException {
-        // Build a new authorized API client service.
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        var credential = accountsManagerService.getCredentials(userCode);
+    @ApiOperation(value = "Add new task to user")
+    @PostMapping("/add")
+    public ResponseEntity addTask(@RequestBody TaskToAddEntity task) throws GeneralSecurityException, IOException {
+        if (teamTaskManagerService.addTaskToUserAccount(task))
+            return new ResponseEntity("ok", HttpStatus.ACCEPTED);
 
-        Tasks service = new Tasks.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
-                .setApplicationName(TaskApiApplication.getAPPLICATION_NAME())
-                .build();
-
-        return service;
-    }
-
-    private void initTestListToAccount(String userCode) throws GeneralSecurityException, IOException {
-        Tasks service = getTasksService(userCode);
-
+        return new ResponseEntity("Error! Account not exist in database!", HttpStatus.ACCEPTED);
     }
 
     @ApiOperation(value = "Test")
@@ -65,7 +47,7 @@ public class TasksController {
             return ResponseEntity.ok("Account not found in secrets");
 
 
-        Tasks service = getTasksService(userCode);
+        Tasks service = teamTaskManagerService.getTasksService(userCode);
 
         // Print the first 10 task lists.
         TaskList result = service.tasklists().get("").execute();

@@ -9,11 +9,15 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.services.tasks.Tasks;
 import com.google.api.services.tasks.TasksScopes;
+import com.google.api.services.tasks.model.TaskList;
 import com.task.api.taskapi.controller.TasksController;
+import com.task.api.taskapi.entity.AccountEntity;
 import com.task.api.taskapi.repository.IAccountRepository;
 import com.task.api.taskapi.service.IAccountsManagerService;
 import lombok.Getter;
+import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +52,7 @@ public class AccountsManagerService implements IAccountsManagerService {
 
         // Build flow
         String TOKENS_DIRECTORY_PATH = "tokens";
-        List<String> SCOPES = Collections.singletonList(TasksScopes.TASKS_READONLY);
+        List<String> SCOPES = Collections.singletonList(TasksScopes.TASKS);
         NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         flow = new GoogleAuthorizationCodeFlow.Builder(
                 HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
@@ -80,15 +84,20 @@ public class AccountsManagerService implements IAccountsManagerService {
         return flow.loadCredential(userCode);
     }
 
-
     @Override
     public void addNewCredentials(GoogleTokenResponse response, String userId) throws IOException {
         flow.createAndStoreCredential(response, userId);
     }
 
     @Override
-    public GoogleTokenResponse getTokenResponse(String code, String userId) throws IOException {
+    public GoogleTokenResponse getTokenByResponse(String code, String userId) throws IOException {
         return flow.newTokenRequest(code).setRedirectUri("http://localhost:8080/api/authorization/callback/" +
                 URLEncoder.encode(userId, String.valueOf(StandardCharsets.UTF_8)) + "/").execute();
+    }
+
+    @Override
+    public String getTeamTaskListFromAccount(String userId) {
+        var res = accountRepository.findByName(userId).stream().findFirst();
+        return res.map(AccountEntity::getTaskListId).orElse(null);
     }
 }
