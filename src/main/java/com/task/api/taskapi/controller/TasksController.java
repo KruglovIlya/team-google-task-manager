@@ -19,7 +19,7 @@ import java.util.List;
 
 
 @Controller
-@RequestMapping("api/google-tasks")
+@RequestMapping("api/tasks")
 public class TasksController {
     @Autowired
     private IAccountsManagerService accountsManagerService;
