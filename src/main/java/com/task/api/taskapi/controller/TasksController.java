@@ -39,7 +39,7 @@ public class TasksController {
         return new ResponseEntity("Error! Account not exist in database!", HttpStatus.ACCEPTED);
     }
 
-    @ApiOperation(value = "Test")
+    @ApiOperation(value = "Get task by userCode")
     @GetMapping(value = "/get", params = {"userCode"})
     public ResponseEntity test(@RequestParam String userCode) throws IOException, GeneralSecurityException {
 
