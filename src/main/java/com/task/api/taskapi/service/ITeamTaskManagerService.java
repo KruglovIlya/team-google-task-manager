@@ -6,11 +6,13 @@ import com.task.api.taskapi.entity.TaskToAddEntity;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.List;
+import java.util.Map;
 
 public interface ITeamTaskManagerService {
     Tasks getTasksService(String userCode) throws GeneralSecurityException, IOException;
 
     TaskList initTeamTasksListOfAccount(String userId) throws GeneralSecurityException, IOException;
 
-    boolean addTaskToUserAccount(TaskToAddEntity task) throws IOException, GeneralSecurityException;
+    Map<String, Boolean> addTaskToUserAccount(TaskToAddEntity task) throws IOException, GeneralSecurityException;
 }
