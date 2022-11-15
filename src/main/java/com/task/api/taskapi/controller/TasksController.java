@@ -30,7 +30,7 @@ public class TasksController {
     TasksController() {
     }
 
-    @ApiOperation(value = "Add new task to user")
+    @ApiOperation(value = "Add new task to users")
     @PostMapping("/add")
     public ResponseEntity addTask(@RequestBody TaskToAddEntity task) throws GeneralSecurityException, IOException {
         if (teamTaskManagerService.addTaskToUserAccount(task))
