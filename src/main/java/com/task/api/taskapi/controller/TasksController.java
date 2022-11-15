@@ -46,11 +46,7 @@ public class TasksController {
         if (!accountsManagerService.checkAccountExist(userCode))
             return ResponseEntity.ok("Account not found in secrets");
 
-
         Tasks service = teamTaskManagerService.getTasksService(userCode);
-
-        // Print the first 10 task lists.
-        TaskList result = service.tasklists().get("").execute();
 
         List<Task> taskList = service.tasks().list("Арены").execute().getItems();
 
