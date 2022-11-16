@@ -18,10 +18,12 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 @Service
 public class TeamTasksManagerService implements ITeamTaskManagerService {
@@ -69,5 +71,13 @@ public class TeamTasksManagerService implements ITeamTaskManagerService {
         }
 
         return result;
+    }
+
+    @Override
+    public List<Task> getListTasksByUserId(String userId) throws GeneralSecurityException, IOException {
+        String taskListId = accountsManagerService.getTeamTaskListFromAccount(userId);
+        var service = getTasksService(userId);
+
+        return service.tasks().list(taskListId).execute().getItems();
     }
 }
