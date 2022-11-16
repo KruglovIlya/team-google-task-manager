@@ -1,12 +1,11 @@
 package com.task.api.taskapi.controller;
 
-import com.google.api.services.tasks.Tasks;
-import com.google.api.services.tasks.model.Task;
-import com.google.api.services.tasks.model.TaskList;
+import com.task.api.taskapi.DTO.TaskDTO;
 import com.task.api.taskapi.entity.TaskToAddEntity;
 import com.task.api.taskapi.service.IAccountsManagerService;
 import com.task.api.taskapi.service.ITeamTaskManagerService;
 import io.swagger.annotations.ApiOperation;
+import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -39,26 +39,14 @@ public class TasksController {
         return new ResponseEntity("Error! Account not exist in database!", HttpStatus.ACCEPTED);
     }
 
-    @ApiOperation(value = "Test")
-    @GetMapping(value = "/get", params = {"userCode"})
-    public ResponseEntity test(@RequestParam String userCode) throws IOException, GeneralSecurityException {
-
-        if (!accountsManagerService.checkAccountExist(userCode))
-            return ResponseEntity.ok("Account not found in secrets");
-
-
-        Tasks service = teamTaskManagerService.getTasksService(userCode);
-
-        // Print the first 10 task lists.
-        TaskList result = service.tasklists().get("").execute();
-
-        List<Task> taskList = service.tasks().list("Арены").execute().getItems();
-
-        if (taskList == null || taskList.isEmpty()) {
-            return new ResponseEntity("No task lists found.", HttpStatus.ACCEPTED);
-        } else {
-            return new ResponseEntity(taskList, HttpStatus.ACCEPTED);
+    @ApiOperation(value = "Get list tasks")
+    @GetMapping(value = "/list", params = {"userId"})
+    public ResponseEntity getList(@RequestParam String userId) throws GeneralSecurityException, IOException {
+        List<TaskDTO> result = new ArrayList<>();
+        for (var task : teamTaskManagerService.getListTasksByUserId(userId)) {
+            result.add(new TaskDTO(task.getId(), task.getTitle(), task.getStatus()));
         }
 
+        return ResponseEntity.ok(result);
     }
 }
