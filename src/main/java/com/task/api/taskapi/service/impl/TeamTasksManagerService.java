@@ -59,13 +59,17 @@ public class TeamTasksManagerService implements ITeamTaskManagerService {
     public Map<String, Boolean> addTaskToUserAccount(TaskToAddEntity task) throws IOException, GeneralSecurityException {
         Map<String, Boolean> result = new HashMap<>();
 
-        for (var user : task.targetUsers) {
-            if (!accountsManagerService.checkAccountExist(user))
+
+        for (var user : task.getTargetUsers()) {
+            if (!accountsManagerService.checkAccountExist(user)) {
                 result.put(user, false);
+                continue;
+            }
+
 
             Tasks service = getTasksService(user);
             String taskListId = accountsManagerService.getTeamTaskListNameFromAccount(user);
-            service.tasks().insert(taskListId, new Task().setTitle(task.taskName)).execute();
+            service.tasks().insert(taskListId, new Task().setTitle(task.getTaskName())).execute();
 
             result.put(user, true);
         }

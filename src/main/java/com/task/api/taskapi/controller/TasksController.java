@@ -1,10 +1,7 @@
 package com.task.api.taskapi.controller;
 
-import com.task.api.taskapi.DTO.TaskDTO;
-
 import com.google.api.services.tasks.Tasks;
 import com.google.api.services.tasks.model.Task;
-
 import com.task.api.taskapi.entity.TaskToAddEntity;
 import com.task.api.taskapi.service.IAccountsManagerService;
 import com.task.api.taskapi.service.ITeamTaskManagerService;
@@ -18,12 +15,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
 import java.util.List;
 
 
 @Controller
-@RequestMapping("api/tasks")
+@RequestMapping("api/google-tasks")
 public class TasksController {
     @Autowired
     private IAccountsManagerService accountsManagerService;
@@ -40,18 +36,24 @@ public class TasksController {
         return ResponseEntity.ok(teamTaskManagerService.addTaskToUserAccount(task));
     }
 
-    @ApiOperation(value = "Get list tasks")
-    @GetMapping(value = "/list", params = {"userId"})
-    public ResponseEntity getList(@RequestParam String userId) throws GeneralSecurityException, IOException {
-        if (!accountsManagerService.checkAccountExist(userId))
-            return ResponseEntity.badRequest().body("Account not found in secrets");
-        
-        List<TaskDTO> result = new ArrayList<>();
-        for (var task : teamTaskManagerService.getListTasksByUserId(userId)) {
-            result.add(new TaskDTO(task.getId(), task.getTitle(), task.getStatus()));
+    @ApiOperation(value = "Get task by userCode")
+    @GetMapping(value = "/get", params = {"userCode"})
+    public ResponseEntity test(@RequestParam String userCode) throws IOException, GeneralSecurityException {
 
+        if (!accountsManagerService.checkAccountExist(userCode))
+            return ResponseEntity.badRequest().body("Account not found in secrets");
+
+        String taskListId = accountsManagerService.getTeamTaskListNameFromAccount(userCode);
+
+        Tasks service = teamTaskManagerService.getTasksService(userCode);
+
+        List<Task> taskList = service.tasks().list(taskListId).execute().getItems();
+
+        if (taskList == null || taskList.isEmpty()) {
+            return new ResponseEntity<>("No task lists found.", HttpStatus.ACCEPTED);
+        } else {
+            return new ResponseEntity<>(taskList, HttpStatus.ACCEPTED);
         }
 
-        return ResponseEntity.ok(result);
     }
 }
