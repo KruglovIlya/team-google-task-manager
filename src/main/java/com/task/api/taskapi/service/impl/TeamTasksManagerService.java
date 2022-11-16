@@ -9,7 +9,6 @@ import com.google.api.services.tasks.Tasks;
 import com.google.api.services.tasks.model.Task;
 import com.google.api.services.tasks.model.TaskList;
 import com.task.api.taskapi.TaskApiApplication;
-import com.task.api.taskapi.entity.TaskEntity;
 import com.task.api.taskapi.entity.TaskToAddEntity;
 import com.task.api.taskapi.service.IAccountsManagerService;
 import com.task.api.taskapi.service.ITeamTaskManagerService;
@@ -19,7 +18,12 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 
 @Service
 public class TeamTasksManagerService implements ITeamTaskManagerService {
@@ -52,16 +56,21 @@ public class TeamTasksManagerService implements ITeamTaskManagerService {
     }
 
     @Override
-    public boolean addTaskToUserAccount(TaskToAddEntity task) throws IOException, GeneralSecurityException {
-        if (!accountsManagerService.checkAccountExist(task.targetUser))
-            return false;
+    public Map<String, Boolean> addTaskToUserAccount(TaskToAddEntity task) throws IOException, GeneralSecurityException {
+        Map<String, Boolean> result = new HashMap<>();
 
-        Tasks service = getTasksService(task.targetUser);
-        String taskListId = accountsManagerService.getTeamTaskListFromAccount(task.targetUser);
+        for (var user : task.targetUsers) {
+            if (!accountsManagerService.checkAccountExist(user))
+                result.put(user, false);
 
-        service.tasks().insert(taskListId, new Task().setTitle(task.taskName)).execute();
+            Tasks service = getTasksService(user);
+            String taskListId = accountsManagerService.getTeamTaskListNameFromAccount(user);
+            service.tasks().insert(taskListId, new Task().setTitle(task.taskName)).execute();
 
-        return true;
+            result.put(user, true);
+        }
+
+        return result;
     }
 
     @Override

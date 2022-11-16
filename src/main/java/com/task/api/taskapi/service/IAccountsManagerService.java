@@ -12,5 +12,5 @@ public interface IAccountsManagerService {
 
     void addNewCredentials(GoogleTokenResponse response, String userId) throws IOException;
     GoogleTokenResponse getTokenByResponse(String code, String userId) throws IOException;
-    String getTeamTaskListFromAccount(String userId);
+    String getTeamTaskListNameFromAccount(String userId);
 }

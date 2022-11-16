@@ -28,6 +28,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 public class TaskApiApplication {
 	@Getter
 	private static final String APPLICATION_NAME = "Google Tasks API Java Quickstart";
+	private static final String TEAM_TASK_LIST_NAME = "Team task list";
 
 	public static void main(String[] args) {
 		SpringApplication.run(TaskApiApplication.class, args);

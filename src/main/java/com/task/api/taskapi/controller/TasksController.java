@@ -1,6 +1,10 @@
 package com.task.api.taskapi.controller;
 
 import com.task.api.taskapi.DTO.TaskDTO;
+
+import com.google.api.services.tasks.Tasks;
+import com.google.api.services.tasks.model.Task;
+
 import com.task.api.taskapi.entity.TaskToAddEntity;
 import com.task.api.taskapi.service.IAccountsManagerService;
 import com.task.api.taskapi.service.ITeamTaskManagerService;
@@ -30,21 +34,22 @@ public class TasksController {
     TasksController() {
     }
 
-    @ApiOperation(value = "Add new task to user")
+    @ApiOperation(value = "Add new task to users")
     @PostMapping("/add")
     public ResponseEntity addTask(@RequestBody TaskToAddEntity task) throws GeneralSecurityException, IOException {
-        if (teamTaskManagerService.addTaskToUserAccount(task))
-            return new ResponseEntity("ok", HttpStatus.ACCEPTED);
-
-        return new ResponseEntity("Error! Account not exist in database!", HttpStatus.ACCEPTED);
+        return ResponseEntity.ok(teamTaskManagerService.addTaskToUserAccount(task));
     }
 
     @ApiOperation(value = "Get list tasks")
     @GetMapping(value = "/list", params = {"userId"})
     public ResponseEntity getList(@RequestParam String userId) throws GeneralSecurityException, IOException {
+        if (!accountsManagerService.checkAccountExist(userId))
+            return ResponseEntity.badRequest().body("Account not found in secrets");
+        
         List<TaskDTO> result = new ArrayList<>();
         for (var task : teamTaskManagerService.getListTasksByUserId(userId)) {
             result.add(new TaskDTO(task.getId(), task.getTitle(), task.getStatus()));
+
         }
 
         return ResponseEntity.ok(result);

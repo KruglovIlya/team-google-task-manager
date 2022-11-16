@@ -96,7 +96,7 @@ public class AccountsManagerService implements IAccountsManagerService {
     }
 
     @Override
-    public String getTeamTaskListFromAccount(String userId) {
+    public String getTeamTaskListNameFromAccount(String userId) {
         var res = accountRepository.findByName(userId).stream().findFirst();
         return res.map(AccountEntity::getTaskListId).orElse(null);
     }

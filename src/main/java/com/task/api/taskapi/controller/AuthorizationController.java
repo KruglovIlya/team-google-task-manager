@@ -18,35 +18,33 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 
+import static org.springframework.http.HttpStatus.*;
+
 
 @Controller
 @RequestMapping("api/authorization")
 public class AuthorizationController {
     @Autowired
     private IAccountsManagerService accountsManagerService;
-
     @Autowired
     private ITeamTaskManagerService teamTaskManagerService;
-
     @Autowired
     private IAccountRepository accountRepository;
 
+
     @PostMapping()
     public ResponseEntity<String> addAccount(@RequestBody @NotNull AccountEntity account) throws IOException {
+        if (accountRepository.findByName(account.getName()).size() != 0)
+            return ResponseEntity.status(BAD_REQUEST).body("Username already using");
+
         String link = accountsManagerService.getAuthLink(account.getName());
-        /*
-        Tasks service = new Tasks.Builder(HTTP_TRANSPORT, JSON_FACTORY, )
-                .setApplicationName(TaskApiApplication.getApplicationName())
-                .build();
-        */
 
         if (link != null) {
             accountRepository.save(account);
             return ResponseEntity.ok(link);
 
-        }
-        else {
-            return ResponseEntity.ok("error");
+        } else {
+            return ResponseEntity.status(BAD_GATEWAY).body("error by get auth link");
 
         }
     }
@@ -61,12 +59,11 @@ public class AuthorizationController {
         var accountEntityOptional = accountRepository.findByName(userId).stream().findFirst();
 
         if (accountEntityOptional.isPresent()) {
-            var accountEntity =  accountEntityOptional.get();
+            var accountEntity = accountEntityOptional.get();
             accountEntity.setTaskListId(teamTaskManagerService.initTeamTasksListOfAccount(userId).getId());
 
             accountRepository.save(accountEntity);
-        }
-        else
+        } else
             return ResponseEntity.ok("Inside error!");
 
         return ResponseEntity.ok("Auth is ok!");
