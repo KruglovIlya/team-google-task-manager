@@ -79,7 +79,7 @@ public class TeamTasksManagerService implements ITeamTaskManagerService {
 
     @Override
     public List<Task> getListTasksByUserId(String userId) throws GeneralSecurityException, IOException {
-        String taskListId = accountsManagerService.getTeamTaskListFromAccount(userId);
+        String taskListId = accountsManagerService.getTeamTaskListNameFromAccount(userId);
         var service = getTasksService(userId);
 
         return service.tasks().list(taskListId).execute().getItems();

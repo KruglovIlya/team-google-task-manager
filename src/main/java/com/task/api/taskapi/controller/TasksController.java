@@ -6,7 +6,6 @@ import com.task.api.taskapi.entity.TaskToAddEntity;
 import com.task.api.taskapi.service.IAccountsManagerService;
 import com.task.api.taskapi.service.ITeamTaskManagerService;
 import io.swagger.annotations.ApiOperation;
-import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +18,7 @@ import java.util.List;
 
 
 @Controller
-@RequestMapping("api/google-tasks")
+@RequestMapping("api/tasks")
 public class TasksController {
     @Autowired
     private IAccountsManagerService accountsManagerService;
@@ -37,15 +36,15 @@ public class TasksController {
     }
 
     @ApiOperation(value = "Get task by userCode")
-    @GetMapping(value = "/get", params = {"userCode"})
-    public ResponseEntity test(@RequestParam String userCode) throws IOException, GeneralSecurityException {
+    @GetMapping(value = "/list", params = {"userName"})
+    public ResponseEntity getList(@RequestParam String userName) throws IOException, GeneralSecurityException {
 
-        if (!accountsManagerService.checkAccountExist(userCode))
+        if (!accountsManagerService.checkAccountExist(userName))
             return ResponseEntity.badRequest().body("Account not found in secrets");
 
-        String taskListId = accountsManagerService.getTeamTaskListNameFromAccount(userCode);
+        String taskListId = accountsManagerService.getTeamTaskListNameFromAccount(userName);
 
-        Tasks service = teamTaskManagerService.getTasksService(userCode);
+        Tasks service = teamTaskManagerService.getTasksService(userName);
 
         List<Task> taskList = service.tasks().list(taskListId).execute().getItems();
 
